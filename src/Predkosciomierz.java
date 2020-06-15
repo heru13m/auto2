@@ -68,11 +68,11 @@ public class Predkosciomierz
     }
     //TODO update() ??
 
-    @Override
-    public String toString() //TODO to zmienic trzeba strukture
-    {
-        return "-- PRĘDKOŚCIOMIERZ --" + System.lineSeparator() +
-                "Prędkość: " + (int) predkosc + " km/h" + System.lineSeparator() +
-                "Tempomat: " + (tempomat ? "aktywny (" + (int) predkoscTempomatu + " km/h)" : "nieaktywny");
-    }
+//    @Override
+//    public String toString() //TODO to zmienic trzeba strukture
+//    {
+//        return "-- PRĘDKOŚCIOMIERZ --" + System.lineSeparator() +
+//                "Prędkość: " + (int) predkosc + " km/h" + System.lineSeparator() +
+//                "Tempomat: " + (tempomat ? "aktywny (" + (int) predkoscTempomatu + " km/h)" : "nieaktywny");
+//    }
 }
