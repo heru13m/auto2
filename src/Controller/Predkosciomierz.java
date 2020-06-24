@@ -1,3 +1,5 @@
+package Controller;
+
 public class Predkosciomierz
 {
     private double maksymalnaPredkosc;

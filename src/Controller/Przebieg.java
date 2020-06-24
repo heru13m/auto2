@@ -1,3 +1,4 @@
+package Controller;
 
 import java.io.Serializable;
 public class Przebieg implements Serializable
