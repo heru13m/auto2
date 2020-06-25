@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import Data.UstawieniaSamochodu;
 import Data.Database;
 import Data.Podroz;
-import Data.XMLFileManager;
+//import Data.XMLFileManager;
 
 /**
  * Klasa reprezentująca samochód i komputer pokładowy.
@@ -60,7 +60,7 @@ public class Auto {
      * Konstruktor klasy Car. Ustawia domyślne wartości oraz tworzy obiekt klasy Database do którego będą później zapisywane
      * dane z podróży. Jeżeli istnieje plik "bac/backup.dat" z ustawieniami wczytuje go i wykorzystuje zapisane w nim dane.
      */
-    public Car() {
+    public Auto() {
         dystans = 0;
         srednieZuzyciePaliwa = 0;
         predkoscMaksymalna = 0;
@@ -80,22 +80,22 @@ public class Auto {
         podroze = new ArrayList<>();
         benzynaPelna = 60;
 
-        // Connecting to database
-        try {
-            db = new Database();
-        } catch (SQLException e) {
-            System.out.println("Connecting to database failed");
-        }
-
-        // Loading backup
-        XMLFileManager fm = new XMLFileManager();
-        try {
-            ustawienia = (UstawieniaSamochodu) fm.readFromFile("bac/backup.dat");
-            this.przywrocUstawienia(ustawienia);
-        } catch (ClassNotFoundException | IOException e) {
-            // Default ustawienia stay the same
-            System.out.println("Loading backup file was unsuccesful");
-        }
+//        // Connecting to database
+//        try {
+//            db = new Database();
+//        } catch (SQLException e) {
+//            System.out.println("Connecting to database failed");
+//        }
+//
+//        // Loading backup
+//        XMLFileManager fm = new XMLFileManager();
+//        try {
+//            ustawienia = (UstawieniaSamochodu) fm.readFromFile("bac/backup.dat");
+//            this.przywrocUstawienia(ustawienia);
+//        } catch (ClassNotFoundException | IOException e) {
+//            // Default ustawienia stay the same
+//            System.out.println("Loading backup file was unsuccesful");
+//        }
     }
 
     /**
@@ -134,16 +134,16 @@ public class Auto {
             System.out.println(aktualnaPodroz.toString());
             podroze.add(aktualnaPodroz);
 
-            // Updating database
-            try {
-                db.addPodroz(aktualnaPodroz);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            // Saving ustawienia
-            przelaczNaUstawienia();
-            zapiszUstawienia("bac/backup.dat");
+//            // Updating database
+//            try {
+//                db.addPodroz(aktualnaPodroz);
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//
+//            // Saving ustawienia
+//            przelaczNaUstawienia();
+//            zapiszUstawienia("bac/backup.dat");
             return;
         }
     }
@@ -243,14 +243,14 @@ public class Auto {
      * Zapisuje ustawienia zapisane w obiekcie klasy UstawieniaSamochodu.
      * @param sciezka ścieżka zapisu
      */
-    public void zapiszUstawienia(String sciezka) {
-        XMLFileManager fm = new XMLFileManager();
-        try {
-            fm.saveToFile(ustawienia, sciezka);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void zapiszUstawienia(String sciezka) {
+//        XMLFileManager fm = new XMLFileManager();
+//        try {
+//            fm.saveToFile(ustawienia, sciezka);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     /**
      * Zwraca ustawienie akutalnie zachowane w obiekcie klasy Car.
