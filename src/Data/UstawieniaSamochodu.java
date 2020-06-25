@@ -28,6 +28,13 @@ public class UstawieniaSamochodu {
         this.benzyna = 0;
     }
 
+    public UstawieniaSamochodu(float przebieg, float przebieg1, float przebieg2) {
+        this.przebiegCalkowity = przebieg;
+        this.przebieg1 = przebieg1;
+        this.przebieg2 = przebieg2;
+        this.benzyna = 0;
+    }
+
 
     public float getPrzebiegCalkowity() {
         return przebiegCalkowity;

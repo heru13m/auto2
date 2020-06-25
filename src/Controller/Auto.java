@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import Data.DanePodstawowe;
 import Data.UstawieniaSamochodu;
 import Data.Database;
 import Data.Podroz;
@@ -46,7 +47,7 @@ public class Auto {
     private DateTimeFormatter formatCzasu;
     private boolean czyJestWlaczony;
     private SwiatlaSamochodowe swiatla;
-    private float[] PrzelozeniaBiegow = { 0.f, 0.0056f, 0.011f, 0.017f, 0.0232f, 0.029f, 0.036f };
+    private float[] PrzelozeniaBiegow = {0.f, 0.0056f, 0.011f, 0.017f, 0.0232f, 0.029f, 0.036f};
     private short bieg; // 0 neutral, 1-6 normal
     private float temperaturaWody, benzyna;
     private ArrayList<Podroz> podroze;
@@ -88,15 +89,12 @@ public class Auto {
 //        }
 //
 //        // Loading backup
-//        XMLFileManager fm = new XMLFileManager();
-//        try {
-//            ustawienia = (UstawieniaSamochodu) fm.readFromFile("bac/backup.dat");
-//            this.przywrocUstawienia(ustawienia);
-//        } catch (ClassNotFoundException | IOException e) {
-//            // Default ustawienia stay the same
-//            System.out.println("Loading backup file was unsuccesful");
-//        }
+        DanePodstawowe dane = new DanePodstawowe();
+        UstawieniaSamochodu ustawieniaSamochodu = dane.wczytajPodstawoweDane();
+        this.przywrocUstawienia(ustawieniaSamochodu);
     }
+
+
 
     /**
      * Ustawia datę i czas uruchomienia silnika, uruchamia silnik poprzez ustawienie flagi czyJestWlaczony.
@@ -133,6 +131,9 @@ public class Auto {
 
             System.out.println(aktualnaPodroz.toString());
             podroze.add(aktualnaPodroz);
+
+            DanePodstawowe dane = new DanePodstawowe();
+            dane.zapiszUstawienia(this);
 
 //            // Updating database
 //            try {
