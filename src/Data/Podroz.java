@@ -12,32 +12,28 @@ public class Podroz implements Cloneable, Serializable {
 
     private float dystans;
     private float przebieg;
-    private float srednieZuzyciePaliwa;
     private LocalDateTime czasPoczatkowy;
     private LocalDateTime czasKoncowy;
     private DateTimeFormatter formatCzasu = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
-    public Podroz(float dystans, float przebieg, float zuzyciePaliwa, int rok, int miesiac, int dzien) {
+    public Podroz(float dystans, float przebieg, int rok, int miesiac, int dzien) {
         this.dystans = dystans;
         this.przebieg = przebieg;
-        this.srednieZuzyciePaliwa = zuzyciePaliwa;
         this.czasPoczatkowy = LocalDateTime.of(rok, miesiac, dzien, 0, 0);
     }
 
 
-    public Podroz(float dystans, float przebieg, float zuzyciePaliwa, String data) {
+    public Podroz(float dystans, float przebieg, String data) {
         this.dystans = dystans;
         this.przebieg = przebieg;
-        this.srednieZuzyciePaliwa = zuzyciePaliwa;
         this.czasPoczatkowy = LocalDateTime.parse(data);
     }
 
 
-    public Podroz(float dystans, float przebieg, float zuzyciePaliwa, LocalDateTime data) {
+    public Podroz(float dystans, float przebieg, LocalDateTime data) {
         this.dystans = dystans;
         this.przebieg = przebieg;
-        this.srednieZuzyciePaliwa = zuzyciePaliwa;
         this.czasPoczatkowy = data;
     }
 
@@ -54,8 +50,7 @@ public class Podroz implements Cloneable, Serializable {
         return "Start time: " + czasPoczatkowy.format(formatCzasu) + "\n" +
                 "End time: " + czasKoncowy.format(formatCzasu) + "\n" +
                 "Distance: " + dystans + "\n" +
-                "Total przebieg: " + przebieg + "\n" +
-                "Avg. fuel consumption: " + srednieZuzyciePaliwa;
+                "Total przebieg: " + przebieg + "\n";
     }
 
 
@@ -70,9 +65,6 @@ public class Podroz implements Cloneable, Serializable {
         this.przebieg = newPrzebieg;
     }
 
-    public void setSrednieZuzyciePaliwa(float newSrednieZuzyciePaliwa) {
-        this.srednieZuzyciePaliwa = newSrednieZuzyciePaliwa;
-    }
 
 
     public void setCzasPoczatkowy(int rok, int miesiac, int dzien) throws InvalidDateException {
@@ -102,10 +94,6 @@ public class Podroz implements Cloneable, Serializable {
         return this.przebieg;
     }
 
-
-    public float getSrednieZuzyciePaliwa() {
-        return this.srednieZuzyciePaliwa;
-    }
 
 
     public String getCzasPoczatkowyString() {

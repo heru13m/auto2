@@ -11,13 +11,11 @@ public class UstawieniaSamochodu {
     private float przebiegCalkowity;
     private float przebieg1;
     private float przebieg2;
-    private float benzyna;
 
     public UstawieniaSamochodu(Auto auto) {
         this.przebiegCalkowity = auto.getPrzebiegCalkowity();
         this.przebieg1 = auto.getPrzebieg1();
         this.przebieg2 = auto.getPrzebieg2();
-        this.benzyna = auto.getBenzyna();
     }
 
 
@@ -25,14 +23,12 @@ public class UstawieniaSamochodu {
         this.przebiegCalkowity = 0;
         this.przebieg1 = 0;
         this.przebieg2 = 0;
-        this.benzyna = 0;
     }
 
     public UstawieniaSamochodu(float przebieg, float przebieg1, float przebieg2) {
         this.przebiegCalkowity = przebieg;
         this.przebieg1 = przebieg1;
         this.przebieg2 = przebieg2;
-        this.benzyna = 0;
     }
 
 
@@ -51,8 +47,5 @@ public class UstawieniaSamochodu {
     }
 
 
-    public float getBenzyna() {
-        return benzyna;
-    }
 
 }

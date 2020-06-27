@@ -33,23 +33,17 @@ public class Auto {
     private float przebieg1;
     private float przebieg2;
     private float dystans;
-    private float srednieZuzyciePaliwa;
-    private float zuzytePaliwo;
     private float predkoscMaksymalna;
     private float predkoscTempomatu;
     private float predkoscAktualna;
     private float predkoscSrednia;
-    private float rpms;
-    private int rpmMax;
     private LocalDateTime czasStartu;
     private LocalDateTime czasZatrzymania;
     private LocalTime czasCalkowity;
     private DateTimeFormatter formatCzasu;
     private boolean czyJestWlaczony;
     private SwiatlaSamochodowe swiatla;
-    private float[] PrzelozeniaBiegow = {0.f, 0.0056f, 0.011f, 0.017f, 0.0232f, 0.029f, 0.036f};
     private short bieg; // 0 neutral, 1-6 normal
-    private float temperaturaWody, benzyna;
     private ArrayList<Podroz> podroze;
     private Podroz aktualnaPodroz;
     private Database db;
@@ -63,19 +57,13 @@ public class Auto {
      */
     public Auto() {
         dystans = 0;
-        srednieZuzyciePaliwa = 0;
         predkoscMaksymalna = 0;
         predkoscAktualna = 0;
-        rpms = 0;
         przebiegCalkowity = 0;
         przebieg1 = 0;
         przebieg2 = 0;
         bieg = 0;
         predkoscTempomatu = 0;
-        rpmMax = 7000;
-        temperaturaWody = 0;
-        benzyna = 0;
-        zuzytePaliwo = 0;
         swiatla = new SwiatlaSamochodowe();
         formatCzasu = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         podroze = new ArrayList<>();
@@ -88,7 +76,7 @@ public class Auto {
 //            System.out.println("Connecting to database failed");
 //        }
 //
-//        // Loading backup
+//        // LoadizmienpPredkosng backup
         DanePodstawowe dane = new DanePodstawowe();
         UstawieniaSamochodu ustawieniaSamochodu = dane.wczytajPodstawoweDane();
         this.przywrocUstawienia(ustawieniaSamochodu);
@@ -106,7 +94,7 @@ public class Auto {
         dystans = 0;
         setCzasStartu(LocalDateTime.now());
         setWlaczony(true);
-        aktualnaPodroz = new Podroz(0, przebiegCalkowity, 0, LocalDateTime.now());
+        aktualnaPodroz = new Podroz(0, przebiegCalkowity, LocalDateTime.now());
     }
 
     /**
@@ -126,7 +114,6 @@ public class Auto {
                 e.printStackTrace();
             }
             aktualnaPodroz.setPrzebieg(przebiegCalkowity);
-            aktualnaPodroz.setSrednieZuzyciePaliwa(srednieZuzyciePaliwa);
             aktualnaPodroz.setCzasKoncowy(LocalDateTime.now());
 
             System.out.println(aktualnaPodroz.toString());
@@ -149,27 +136,8 @@ public class Auto {
         }
     }
 
-    /**
-     * Zmienia bieg na wyższy.
-     * Sprawdza czy możliwa jest zmiana biegu na wyższy, jeśli tak to go zmienia oraz odpowiednio zmniejsza obroty silnika.
-     */
-    public void zmienBiegNaWyzszy() {
-        if(bieg < 6) {
-            bieg++;
-            rpms -= 700;
-        }
-    }
 
-    /**
-     * Zmienia bieg na niższy.
-     * Sprawdza czy możliwa jest zmiana biegu na niższy, jeśli tak to go zmienia oraz odpowiednio zwiększa obroty silnika.
-     */
-    public void zmienBiegNaNizszy() {
-        if(bieg > 0) {
-            bieg--;
-            if(czyJestWlaczony) rpms += 600;
-        }
-    }
+
 
     /**
      * Aktualizuje wartości komputera pokładowego.
@@ -179,25 +147,27 @@ public class Auto {
      * Pod koniec aktualizuje stan paliwa i średnie spalanie.
      */
     public void uaktualnij() {
-        if(predkoscAktualna > predkoscMaksymalna && czyJestWlaczony) predkoscMaksymalna = predkoscAktualna;
-        // 1 sec dystans difference
-        double dystansDiff = predkoscAktualna / 3.6 / 1000;
-        float benzynaDiff = 0;
-        dystans += dystansDiff;
-        przebieg1 += dystansDiff;
-        przebieg2 += dystansDiff;
-        przebiegCalkowity += dystansDiff;
-        if(czyJestWlaczony) predkoscSrednia = dystans * 1000 / czasWsekundach * 3.6f;
-        if(temperaturaWody < 20 && rpms > 100) temperaturaWody += 0.1;
-        if(rpms > 0) {
-            if(rpms < 2000) benzynaDiff = (float) (9.5 / 3600);
-            else if(rpms > 5000) benzynaDiff = (float) (15.7 / 3600);
-            else benzynaDiff = (float) (6.2 / 3600);
-            zuzytePaliwo += benzynaDiff;
+        try {
+            if (predkoscAktualna > predkoscMaksymalna && czyJestWlaczony)
+                predkoscMaksymalna = predkoscAktualna;
+            // 1 sec dystans difference
+            double dystansDiff = predkoscAktualna / 3600.0;
+            dystans += dystansDiff;
+            przebieg1 += dystansDiff;
+            przebieg2 += dystansDiff;
+            przebiegCalkowity += dystansDiff;
+
+            Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
+            if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
+            double czasPracyWsekundach = czasPracy.getSeconds();
+
+            if (czyJestWlaczony)
+                predkoscSrednia = dystans * 1000 / (float) czasPracyWsekundach * 3.6f;
         }
-        srednieZuzyciePaliwa = zuzytePaliwo * 3600 / czasWsekundach;
-        benzyna -= benzynaDiff;
-        if(benzyna <= 0) stop();
+        catch (Exception e){
+            System.out.println(e);
+        }
+
     }
 
     /**
@@ -214,6 +184,7 @@ public class Auto {
      *
      * @param predkoscDoOsiagniecia docelowa prędkość którą chcemy osiągnąć
      */
+    /*
     public void przyspiesz(float predkoscDoOsiagniecia) {
         this.predkoscAktualna = this.getPredkoscAktualna();
         if(predkoscAktualna >= predkoscDoOsiagniecia) {
@@ -228,6 +199,14 @@ public class Auto {
         if(rpms < 0) rpms = 0;
     }
 
+     */
+
+    // czyli gdy auto hamuje np -10 km/h na sekunde hamowania gdy jedzie luzem -1 gdy przyspiesza +5 km/h na sekunde
+    public void zmienPredkosc(float roznicaPredkosciWSekundzie) {
+        predkoscAktualna= predkoscAktualna + roznicaPredkosciWSekundzie;
+
+    }
+
     /**
      * Przywraca ustawienia z odczytanego przedniej obiektu UstawieniaSamochodu.
      *
@@ -237,7 +216,6 @@ public class Auto {
         this.przebiegCalkowity = backup.getPrzebiegCalkowity();
         this.przebieg1 = backup.getPrzebieg1();
         this.przebieg2 = backup.getPrzebieg2();
-        this.benzyna = backup.getBenzyna();
     }
 
     /**
@@ -290,22 +268,8 @@ public class Auto {
         czasCalkowity = LocalTime.of((int)czasWsekundach / 360 % 24, (int)czasWsekundach / 60 % 60, (int)czasWsekundach % 60);
     }
 
-    /**
-     * Zwraca aktualny biegu samochodu.
-     * @return wartość atualnego biegu samochodu jako String
-     */
-    public String podajAktualnyBiegWstringu() {
-        return bieg == 0 ? "N" : String.valueOf(this.bieg);
-    }
 
-    /**
-     * Ustawia ilość paliwa.
-     * @param benzyna ilość paliwa jako float
-     */
-    public void setBenzyna(float benzyna) {
-        if(benzyna > benzynaPelna) return;
-        this.benzyna = benzyna;
-    }
+
 
     /**
      * Zwraca przebieg całkowity.
@@ -393,33 +357,8 @@ public class Auto {
         this.dystans += a;
     }
 
-    /**
-     * Zwraca średnie zużycie paliwa.
-     * @return zwraca średnie zużycie paliwa jako float
-     */
-    public float getSrednieZuzyciePaliwa() {
-        return srednieZuzyciePaliwa;
-    }
 
-    /**
-     * Tankuje samochód.
-     * Dodaje paliwo o ile pojemność baku na to pozwala.
-     * @param ekstraBenzyna wartość o jaką chcemy zwięszkyć ilość paliwa
-     * @return status wykonanej operacji: 1 - nieudana, 0 - udana
-     */
-    public boolean dodajBenzyne(float ekstraBenzyna) {
-        if(benzyna + ekstraBenzyna > benzynaPelna) return true;
-        benzyna += ekstraBenzyna;
-        return false;
-    }
 
-    /**
-     * Ustawia średnie zużycie paliwa.
-     * @param srednieZuzyciePaliwa średnie zużycie paliwa jako float
-     */
-    public void setSrednieZuzyciePaliwa(float srednieZuzyciePaliwa) {
-        this.srednieZuzyciePaliwa = srednieZuzyciePaliwa;
-    }
 
     public float getPrzebiegCalkowity() {
         return przebiegCalkowity;
@@ -441,13 +380,9 @@ public class Auto {
         this.predkoscMaksymalna = predkoscMaksymalna;
     }
 
-    /**
-     * Oblicza aktualną prędkość.
-     * Iloczyn obrotów silnika i wartości odpowiadającej biegu samochodu.
-     * @return zwraca aktualną prędkość jako float
-     */
+
     public float getPredkoscAktualna() {
-        return rpms * PrzelozeniaBiegow[bieg];
+        return this.predkoscAktualna;
     }
 
     /**
@@ -458,37 +393,8 @@ public class Auto {
         this.predkoscAktualna = predkoscAktualna;
     }
 
-    /**
-     * Zwraca obroty silnika.
-     * @return  obroty silnika jako float
-     */
-    public float getRpms() {
-        return rpms;
-    }
 
-    /**
-     * Ustawia obroty silnika.
-     * @param rpms obroty silnika jako int
-     */
-    public void setRpms(int rpms) {
-        this.rpms = rpms;
-    }
 
-    /**
-     * Zwraca maksymalne obroty silnika.
-     * @return maksymalne obroty silnika jako float
-     */
-    public int getRpmMax() {
-        return rpmMax;
-    }
-
-    /**
-     * Ustawia maksymalne obroty silnika.
-     * @param rpmMax obroty silnika jako int
-     */
-    public void setRpmMax(int rpmMax) {
-        this.rpmMax = rpmMax;
-    }
 
     /**
      * Stan silnika (włączony/wyłączony).
@@ -562,29 +468,7 @@ public class Auto {
         this.predkoscTempomatu = predkoscTempomatu;
     }
 
-    /**
-     * Zwraca temperaturę płynu chłodniczego.
-     * @return temperatura płynu chłodniczego jako float
-     */
-    public float getTemperaturaWody() {
-        return temperaturaWody;
-    }
 
-    /**
-     * Ustawia temperaturę płynu chłodniczego.
-     * @param temperaturaWody temperatura płynu chłodniczego jako float
-     */
-    public void setTemperaturaWody(float temperaturaWody) {
-        this.temperaturaWody = temperaturaWody;
-    }
-
-    /**
-     * Zwraca ilość paliwa.
-     * @return ilość paliwa jako float
-     */
-    public float getBenzyna() {
-        return benzyna;
-    }
 
     /**
      * Zwraca listę zapisanych podróży.
@@ -618,21 +502,5 @@ public class Auto {
         return benzynaPelna;
     }
 
-    /**
-     * Zwraca tablice z przełożeniami biegów.
-     * Aby otrzymać konkretne przełożenie odwołujemy się do elementu tablicy o indeksie równym aktualnemu biegowi.
-     * Wartość w tablicy o indeksie 0 wynosi 0 - jest to bieg neutralny.
-     * @return tablica przełożeń biegów podanych jako float
-     */
-    public float[] getPrzelozeniaBiegow() {
-        return PrzelozeniaBiegow;
-    }
 
-    /**
-     * Ustawia przełożenia biegów z tablicy {@link #getPrzelozeniaBiegow()}
-     * @param PrzelozeniaBiegow tablica z przełożeniami biegów
-     */
-    public void setPrzelozeniaBiegow(float[] PrzelozeniaBiegow) {
-        this.PrzelozeniaBiegow = PrzelozeniaBiegow;
-    }
 }

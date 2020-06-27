@@ -39,7 +39,6 @@ public class Database {
 
         pstmt.setFloat(1, podroz.getDystans());
         pstmt.setFloat(2, podroz.getPrzebieg());
-        pstmt.setFloat(3, podroz.getSrednieZuzyciePaliwa());
         pstmt.setString(4, podroz.getCzasPoczatkowyString());
         pstmt.setString(5, podroz.getCzasKoncowyString());
 
@@ -114,7 +113,7 @@ public class Database {
             LocalDateTime dataPoczatkowa = LocalDateTime.parse(rs.getString(5), formatter);
             LocalDateTime dataKoncowa = LocalDateTime.parse(rs.getString(6), formatter);
 
-            Podroz newPodroz = new Podroz(dystans, przebiegCalkowity, srednieZuzyciePaliwa, dataPoczatkowa);
+            Podroz newPodroz = new Podroz(dystans, przebiegCalkowity, dataPoczatkowa);
             newPodroz.setCzasKoncowy(dataKoncowa);
             databasePodroze.add(newPodroz);
         }

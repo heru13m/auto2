@@ -12,7 +12,7 @@ public class Predkosciomierz
     public Predkosciomierz() //TODO tutaj updatdowanie?
     {
         this.maksymalnaPredkosc = 200.0;
-        this.przyspieszenie = 5.0;
+        this.przyspieszenie = 1.0;
     }
 
     public void setPredkoscTempomatu(double predkoscTempomatu) {

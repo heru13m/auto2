@@ -15,13 +15,16 @@ public class Main {
         Auto samochodzik = new Auto();
         samochodzik.start();
         samochodzik.setPedkoscAktualna(150);
-        samochodzik.setBenzyna(50);
-        for ( int i =0; i<3600;i++)
+        samochodzik.getPredkoscAktualna();
+        samochodzik.zmienPredkosc(-10);
+        for ( int i =0; i<30;i++)
         {
+            Thread.sleep(1000);
             samochodzik.uaktualnij();
         }
         samochodzik.stop();
         System.out.println(samochodzik.getPrzebiegCalkowity());
+        System.out.println(samochodzik.getPredkoscSrednia());
         System.out.println(samochodzik);
         System.out.println(samochodzik.getSwiatla().toString());
 
