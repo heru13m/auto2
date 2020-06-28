@@ -1,7 +1,5 @@
 package Controller;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,8 +8,8 @@ import java.util.ArrayList;
 
 import Data.DanePodstawowe;
 import Data.UstawieniaSamochodu;
-import Data.Database;
 import Data.Podroz;
+import Data.Database;
 //import Data.XMLFileManager;
 
 /**
@@ -46,10 +44,11 @@ public class Auto {
     private short bieg; // 0 neutral, 1-6 normal
     private ArrayList<Podroz> podroze;
     private Podroz aktualnaPodroz;
-    private Database db;
+  //  private Database db;
     private long czasWsekundach;
     private UstawieniaSamochodu ustawienia;
     private float benzynaPelna;
+    private Database db;
 
     /**
      * Konstruktor klasy Car. Ustawia domyślne wartości oraz tworzy obiekt klasy Database do którego będą później zapisywane
@@ -69,6 +68,8 @@ public class Auto {
         podroze = new ArrayList<>();
         benzynaPelna = 60;
 
+
+        db = new Database();
 //        // Connecting to database
 //        try {
 //            db = new Database();
@@ -109,7 +110,7 @@ public class Auto {
             setCzasZatrzymania(LocalDateTime.now());
 
             try {
-                aktualnaPodroz.setLength(dystans);
+                aktualnaPodroz.setDystans(dystans);
             } catch (InvalidNumberException e) {
                 e.printStackTrace();
             }
@@ -124,7 +125,8 @@ public class Auto {
 
 //            // Updating database
 //            try {
-//                db.addPodroz(aktualnaPodroz);
+              db.addPodroz(aktualnaPodroz);
+              db.odzyskajPodroze();
 //            } catch (SQLException e) {
 //                e.printStackTrace();
 //            }
@@ -490,9 +492,9 @@ public class Auto {
      * Zwraca obiekt klasy Databse, reprezentujący bazę danych.
      * @return obiekt klasy Database
      */
-    public Database getDb() {
-        return db;
-    }
+//    public Database getDb() {
+//        return db;
+//    }
 
     /**
      * Zwraca pojemność baku.

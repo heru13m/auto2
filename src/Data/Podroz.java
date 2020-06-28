@@ -24,10 +24,23 @@ public class Podroz implements Cloneable, Serializable {
     }
 
 
+
     public Podroz(float dystans, float przebieg, String data) {
         this.dystans = dystans;
         this.przebieg = przebieg;
         this.czasPoczatkowy = LocalDateTime.parse(data);
+    }
+    public Podroz(float dystans, float przebieg, String data, String data2) {
+        this.dystans = dystans;
+        this.przebieg = przebieg;
+        this.czasPoczatkowy = LocalDateTime.parse(data);
+        this.czasKoncowy = LocalDateTime.parse(data2);
+    }
+    public Podroz(float dystans, float przebieg, LocalDateTime data, LocalDateTime data2) {
+        this.dystans = dystans;
+        this.przebieg = przebieg;
+        this.czasPoczatkowy = data;
+        this.czasKoncowy = data2;
     }
 
 
@@ -47,17 +60,17 @@ public class Podroz implements Cloneable, Serializable {
      */
 
     public String toString() {
-        return "Start time: " + czasPoczatkowy.format(formatCzasu) + "\n" +
-                "End time: " + czasKoncowy.format(formatCzasu) + "\n" +
-                "Distance: " + dystans + "\n" +
-                "Total przebieg: " + przebieg + "\n";
+        return "Poczatek podrozy " + czasPoczatkowy.format(formatCzasu) + "\n" +
+                "Koniec podrozy: " + czasKoncowy.format(formatCzasu) + "\n" +
+                "Dystans: " + dystans + "\n" +
+                "Calkowity przebieg: " + przebieg + "\n\n";
     }
 
 
-    public void setLength(float newLength) throws InvalidNumberException {
-        if(newLength < 0)
-            throw new InvalidNumberException(String.valueOf(newLength) + " długość podróży nie może być ujemna");
-        this.dystans = newLength;
+    public void setDystans(float newDystans) throws InvalidNumberException {
+        if(newDystans < 0)
+            throw new InvalidNumberException(String.valueOf(newDystans) + " długość podróży nie może być ujemna");
+        this.dystans = newDystans;
     }
 
 

@@ -10,21 +10,42 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import org.bson.Document;
+
+
 
 public class Database {
 
     private String connectionUrl;
     private Statement statement;
     private Connection connection;
+    MongoClient mongo = new MongoClient( "localhost" , 27017 );
+    MongoDatabase db = mongo.getDatabase("Rejestr");
+
+    MongoCollection<Document> kolekcjaPodrozy = db.getCollection("Podroze");
 
     /**
      * Konstruktor łączy się z bazą danych oraz tworzy obiekt zapytania które zostanie wysłane do bazy danych.
      * @throws SQLException wyjatek nieudanego połączenia z bazą danych
      */
-    public Database() throws SQLException  {
-        connectionUrl = "jdbc:sqlserver://localhost:1433;databaseName=JDBC_database;";
-        connection = DriverManager.getConnection(connectionUrl, "JDBC" , "Java1234");
-        statement = connection.createStatement();
+//    public Database() throws SQLException  {
+//        connectionUrl = "jdbc:sqlserver://localhost:1433;databaseName=JDBC_database;";
+//        connection = DriverManager.getConnection(connectionUrl, "JDBC" , "Java1234");
+//        statement = connection.createStatement();
+//    }
+    public Database()
+    {
+        MongoClient mongo = new MongoClient( "localhost" , 27017 );
+        MongoDatabase db = mongo.getDatabase("Rejestr");
+
+        MongoCollection<Document> kolekcjaPodrozy = db.getCollection("Podroze");
+
     }
 
     /**
@@ -32,19 +53,29 @@ public class Database {
      * @param podroz obiekt klasy Podroz zawierający informacje o aktualnej podróży
      * @throws SQLException wyjatek nieudanej operacji na bazie danych
      */
-    public void addPodroz(Podroz podroz) throws SQLException {
-        PreparedStatement pstmt = null;
+//    public void addPodroz(Podroz podroz) throws SQLException {
+//        PreparedStatement pstmt = null;
+//
+//        pstmt = connection.prepareStatement("INSERT INTO Podroze VALUES (?, ?, ?, ?, ?);");
+//
+//        pstmt.setFloat(1, podroz.getDystans());
+//        pstmt.setFloat(2, podroz.getPrzebieg());
+//        pstmt.setString(4, podroz.getCzasPoczatkowyString());
+//        pstmt.setString(5, podroz.getCzasKoncowyString());
+//
+//        pstmt.executeUpdate();
+//
+//        if (pstmt != null) pstmt.close();
+//    }
 
-        pstmt = connection.prepareStatement("INSERT INTO Podroze VALUES (?, ?, ?, ?, ?);");
+    public void addPodroz(Podroz podroz){
+        Document p = new Document("Dystans",podroz.getDystans())
+                .append("Przebieg",podroz.getPrzebieg())
+                .append("Poczatek",podroz.getCzasPoczatkowyString())
+                .append("Koniec",podroz.getCzasKoncowyString());
 
-        pstmt.setFloat(1, podroz.getDystans());
-        pstmt.setFloat(2, podroz.getPrzebieg());
-        pstmt.setString(4, podroz.getCzasPoczatkowyString());
-        pstmt.setString(5, podroz.getCzasKoncowyString());
+        kolekcjaPodrozy.insertOne(p);
 
-        pstmt.executeUpdate();
-
-        if (pstmt != null) pstmt.close();
     }
 
     /**
@@ -100,7 +131,44 @@ public class Database {
      * @return lista objektów klasy Podroz zawierająca wpisy z bazy danych
      * @throws SQLException wyjatek nieudanej operacji na bazie danych
      */
-    public ArrayList<Podroz> odzyskajPodroze() throws SQLException {
+
+    public ArrayList<Document> odzyskajPodroze(){
+        ArrayList<Document> databasePodroze = new ArrayList<Document>();
+        ArrayList<Podroz> databasePodroze2 = new ArrayList<Podroz>();
+        //float a;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        FindIterable<Document> cursor = kolekcjaPodrozy.find();
+        MongoCursor<Document> iterator = cursor.iterator();
+        while(iterator.hasNext())
+            {
+
+                Document document = iterator.next();
+              databasePodroze.add(document);
+
+              //  System.out.println(document);
+            }
+
+        for(int i=0; i < databasePodroze.size();i++)
+        {
+            double a = databasePodroze.get(i).getDouble("Dystans");
+            double b = databasePodroze.get(i).getDouble("Przebieg");
+            String c = databasePodroze.get(i).get("Poczatek","-");
+            String d = databasePodroze.get(i).get("Koniec","-");
+            Podroz aktualnaPodroz = new Podroz((float)a,(float)b,LocalDateTime.parse((c), formatter),LocalDateTime.parse((d), formatter));
+            databasePodroze2.add(aktualnaPodroz);
+        }
+
+
+       // System.out.println(databasePodroze.get(2).get("Poczatek",0));
+        System.out.println("..................------...........----------........");
+        System.out.println(databasePodroze2);
+        System.out.println("..................");
+        return databasePodroze;
+    }
+
+
+    public ArrayList<Podroz> odzyskajPodroze2() throws SQLException {
         ArrayList<Podroz> databasePodroze = new ArrayList<Podroz>();
         ResultSet rs = statement.executeQuery("SELECT * FROM Podroze ORDER BY dataPoczatkowa DESC");
 
