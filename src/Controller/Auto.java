@@ -38,12 +38,12 @@ public class Auto {
     private float predkoscTempomatu;
     private float predkoscAktualna;
     private float predkoscSrednia;
+    private SwiatlaSamochodowe swiatla;
     private LocalDateTime czasStartu;
     private LocalDateTime czasZatrzymania;
     private LocalTime czasCalkowity;
     private DateTimeFormatter formatCzasu;
     private boolean czyJestWlaczony;
-    private SwiatlaSamochodowe swiatla;
     private short bieg; // 0 neutral, 1-6 normal
     private ArrayList<Podroz> podroze;
     private Podroz aktualnaPodroz;
@@ -87,6 +87,9 @@ public class Auto {
         this.przywrocUstawienia(ustawieniaSamochodu);
     }
 
+    public SwiatlaSamochodowe wezSwiatla(){
+        return swiatla;
+    }
 
 
     /**
@@ -101,6 +104,8 @@ public class Auto {
         setWlaczony(true);
         aktualnaPodroz = new Podroz(0, przebiegCalkowity, LocalDateTime.now());
     }
+
+
 
     /**
      * Wyłącza silnik, zapisuje przebyty dystans, średnie zużycie paliwa oraz datę i czas zatrzymania silnika do obiektu aktualnaPodroz.

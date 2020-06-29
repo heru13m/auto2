@@ -41,6 +41,9 @@ public class Main {
         Auto samochodzik = new Auto();
         new MainFrame(samochodzik);
         samochodzik.start();
+        samochodzik.wezSwiatla().wlaczPozycyjne();
+        samochodzik.wezSwiatla().wlaczMijania();
+
         //zuzycie na postoju
         for ( int i =0; i<30;i++)
         {
