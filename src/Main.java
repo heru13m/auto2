@@ -41,6 +41,15 @@ public class Main {
         Auto samochodzik = new Auto();
         new MainFrame(samochodzik);
         samochodzik.start();
+        //zuzycie na postoju
+        for ( int i =0; i<30;i++)
+        {
+
+            Thread.sleep(1000);
+            samochodzik.uaktualnij();
+
+        }
+        samochodzik.zmienPredkosc(-2);
         samochodzik.setPedkoscAktualna(150);
         samochodzik.getPredkoscAktualna();
         samochodzik.zmienPredkosc(-10);

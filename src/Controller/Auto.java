@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Random;
 
 import Data.DanePodstawowe;
 import Data.UstawieniaSamochodu;
@@ -31,6 +32,8 @@ public class Auto {
     private float przebieg1;
     private float przebieg2;
     private float dystans;
+    private float srednieZuzyciePaliwa;
+    private float zuzytePaliwo;         // na trasie
     private float predkoscMaksymalna;
     private float predkoscTempomatu;
     private float predkoscAktualna;
@@ -61,6 +64,7 @@ public class Auto {
         przebiegCalkowity = 0;
         przebieg1 = 0;
         przebieg2 = 0;
+        zuzytePaliwo=0;
         bieg = 0;
         predkoscTempomatu = 0;
         swiatla = new SwiatlaSamochodowe();
@@ -158,10 +162,23 @@ public class Auto {
             przebieg1 += dystansDiff;
             przebieg2 += dystansDiff;
             przebiegCalkowity += dystansDiff;
+            if (dystansDiff>0) {
+                zuzytePaliwo += (liczSpalanie(predkoscAktualna) * dystansDiff / 100);
+            }
+            else
+                zuzytePaliwo+= (liczSpalanie(predkoscAktualna)/3600);
+
 
             Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
             if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
             double czasPracyWsekundach = czasPracy.getSeconds();
+
+            if (dystans ==0)
+                srednieZuzyciePaliwa = (float) (zuzytePaliwo * (3600f/czasPracyWsekundach));
+            else
+                srednieZuzyciePaliwa = zuzytePaliwo * (100/dystans);
+
+
 
             if (czyJestWlaczony)
                 predkoscSrednia = dystans * 1000 / (float) czasPracyWsekundach * 3.6f;
@@ -170,6 +187,38 @@ public class Auto {
             System.out.println(e);
         }
 
+    }
+
+    public float getSrednieZuzyciePaliwa() {
+        return srednieZuzyciePaliwa;
+    }
+
+    public void setSrednieZuzyciePaliwa(float srednieZuzyciePaliwa) {
+        this.srednieZuzyciePaliwa = srednieZuzyciePaliwa;
+    }
+
+    public float getZuzytePaliwo() {
+        return zuzytePaliwo;
+    }
+
+    public void setZuzytePaliwo(float zuzytePaliwo) {
+        this.zuzytePaliwo = zuzytePaliwo;
+    }
+
+    public float liczSpalanie(float predkosc){
+        if (predkosc==0){
+            return 2f;
+        }
+        if (predkosc>0 && predkosc < 30){
+            return (float) (20f* (Math.random()*0.7)+0.3);
+        }
+        if (predkosc>=30 && predkosc < 90){
+            return (float) (10f* (Math.random()*0.7)+0.3);
+        }
+        if (predkosc>=90 && predkosc < 200){
+            return (float) (18f* (Math.random()*0.7)+0.3);
+        }
+        return 10f;
     }
 
     /**
@@ -205,7 +254,12 @@ public class Auto {
 
     // czyli gdy auto hamuje np -10 km/h na sekunde hamowania gdy jedzie luzem -1 gdy przyspiesza +5 km/h na sekunde
     public void zmienPredkosc(float roznicaPredkosciWSekundzie) {
-        predkoscAktualna= predkoscAktualna + roznicaPredkosciWSekundzie;
+        if (predkoscAktualna + roznicaPredkosciWSekundzie> 0f && predkoscAktualna + roznicaPredkosciWSekundzie< 210);
+            predkoscAktualna= predkoscAktualna + roznicaPredkosciWSekundzie;
+        if (predkoscAktualna + roznicaPredkosciWSekundzie<0f)
+            predkoscAktualna= 0f;
+        if (predkoscAktualna + roznicaPredkosciWSekundzie> 210)
+        predkoscAktualna= 210f;
 
     }
 
