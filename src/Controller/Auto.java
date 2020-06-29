@@ -38,6 +38,7 @@ public class Auto {
     private float predkoscTempomatu;
     private float predkoscAktualna;
     private float predkoscSrednia;
+    private boolean tempomat;
     private SwiatlaSamochodowe swiatla;
     private LocalDateTime czasStartu;
     private LocalDateTime czasZatrzymania;
@@ -67,6 +68,7 @@ public class Auto {
         zuzytePaliwo=0;
         bieg = 0;
         predkoscTempomatu = 0;
+        tempomat = false;
         swiatla = new SwiatlaSamochodowe();
         formatCzasu = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         podroze = new ArrayList<>();
@@ -134,8 +136,8 @@ public class Auto {
 
 //            // Updating database
 //            try {
-              db.addPodroz(aktualnaPodroz);
-              db.odzyskajPodroze();
+              //db.addPodroz(aktualnaPodroz);
+              //db.odzyskajPodroze();
 //            } catch (SQLException e) {
 //                e.printStackTrace();
 //            }
@@ -148,45 +150,40 @@ public class Auto {
     }
 
 
-
-
     /**
-     * Aktualizuje wartości komputera pokładowego.
-     * Zmienia wartości prędkości maksymalnej, oblicza przebyty dystans w ciągu jednej sekundy,
-     * zwiększa liczniki samochodu zgodnie z przebytym dystansem, na podstawie dystansu podróży i czasu trwania oblicza średnią prędkość,
-     * zwiększa odpowiednio temperaturę płynu chłodniczego, w zależności od ilości obrotów na min. oblicza ilość zużytego paliwa.
-     * Pod koniec aktualizuje stan paliwa i średnie spalanie.
-     */
+     * Metoda aktualizuje parametry samochodu, wywoływana co sekundę
+      */
     public void uaktualnij() {
         try {
-            if (predkoscAktualna > predkoscMaksymalna && czyJestWlaczony)
-                predkoscMaksymalna = predkoscAktualna;
-            // 1 sec dystans difference
-            double dystansDiff = predkoscAktualna / 3600.0;
-            dystans += dystansDiff;
-            przebieg1 += dystansDiff;
-            przebieg2 += dystansDiff;
-            przebiegCalkowity += dystansDiff;
-            if (dystansDiff>0) {
-                zuzytePaliwo += (liczSpalanie(predkoscAktualna) * dystansDiff / 100);
+            if (czyJestWlaczony) {
+                System.out.println("aktualizuje auto");
+                if (predkoscAktualna > predkoscMaksymalna && czyJestWlaczony)
+                    predkoscMaksymalna = predkoscAktualna;
+                // 1 sec dystans difference
+                double dystansDiff = predkoscAktualna / 3600.0;
+                dystans += dystansDiff;
+                przebieg1 += dystansDiff;
+                przebieg2 += dystansDiff;
+                przebiegCalkowity += dystansDiff;
+                if (dystansDiff > 0) {
+                    zuzytePaliwo += (liczSpalanie(predkoscAktualna) * dystansDiff / 100);
+                } else
+                    zuzytePaliwo += (liczSpalanie(predkoscAktualna) / 3600);
+
+
+                Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
+                if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
+                double czasPracyWsekundach = czasPracy.getSeconds();
+
+                if (dystans == 0)
+                    srednieZuzyciePaliwa = (float) (zuzytePaliwo * (3600f / czasPracyWsekundach));
+                else
+                    srednieZuzyciePaliwa = zuzytePaliwo * (100 / dystans);
+
+
+                if (czyJestWlaczony)
+                    predkoscSrednia = dystans * 1000 / (float) czasPracyWsekundach * 3.6f;
             }
-            else
-                zuzytePaliwo+= (liczSpalanie(predkoscAktualna)/3600);
-
-
-            Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
-            if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
-            double czasPracyWsekundach = czasPracy.getSeconds();
-
-            if (dystans ==0)
-                srednieZuzyciePaliwa = (float) (zuzytePaliwo * (3600f/czasPracyWsekundach));
-            else
-                srednieZuzyciePaliwa = zuzytePaliwo * (100/dystans);
-
-
-
-            if (czyJestWlaczony)
-                predkoscSrednia = dystans * 1000 / (float) czasPracyWsekundach * 3.6f;
         }
         catch (Exception e){
             System.out.println(e);
@@ -563,5 +560,18 @@ public class Auto {
         return benzynaPelna;
     }
 
-
+    @Override
+    public String toString() {
+        return "Auto{" +
+                "przebiegCalkowity=" + przebiegCalkowity +
+                ", przebieg1=" + przebieg1 +
+                ", przebieg2=" + przebieg2 +
+                ", dystans=" + dystans +
+                ", srednieZuzyciePaliwa=" + srednieZuzyciePaliwa +
+                ", predkoscMaksymalna=" + predkoscMaksymalna +
+                ", predkoscSrednia=" + predkoscSrednia +
+                ", tempomat=" + tempomat +
+                ", czyJestWlaczony=" + czyJestWlaczony +
+                '}';
+    }
 }

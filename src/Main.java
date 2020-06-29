@@ -1,8 +1,12 @@
+import Controller.AktualizujDane;
 import Controller.Auto;
 import View.MainFrame;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.Key;
 
 import javax.swing.JFrame;
@@ -18,12 +22,61 @@ import org.bson.Document;
 
 public class Main {
 
-    public void addPodroz(Podroz podroz){
+    public void addPodroz(Podroz podroz) {
 
     }
 
     public static void main(String[] args) throws InterruptedException {
-       // new KeyListenerExample();
+        if (args.length == 0) {
+
+
+
+            //tu wywolanie okienka
+        } else if (args[0].compareTo("g") == 0 || args[0].compareTo("graficzny") == 0) {
+
+            Auto samochodzik = new Auto();
+
+
+            Runnable r = new Runnable() {
+                public void run() {
+                    boolean flag = true;
+                    int i = 0;
+                    while(flag){
+                                    samochodzik.uaktualnij();
+                                }
+                    }
+
+            };
+
+            Thread t = new Thread(r);
+            // Lets run Thread in background..
+            // Sometimes you need to run thread in background for your Timer application..
+            t.start();
+
+
+            System.out.println("Witaj, wybierz co chcesz zrobić:");
+            System.out.println("1. Uruchom silnik");
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Twój wybór:");
+            String s= null;
+            try {
+                 s = br.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (s.equals("1")) {
+                samochodzik.start();
+                System.out.println("1: Sprawdz dane samochodu");
+                System.out.println("W: Przyspiesz");
+                System.out.println("S: Zwolnij");
+
+            }
+
+        } else {
+            System.out.println("Opcja nieznana");
+        }
+
+        // new KeyListenerExample();
 //         // Creating a Mongo client
 //         MongoClient mongo = new MongoClient( "localhost" , 27017 );
 //         // Creating Credentials
@@ -37,7 +90,6 @@ public class Main {
 //         System.out.println("Collection created successfully");
 
 
-
         Auto samochodzik = new Auto();
         new MainFrame(samochodzik);
         samochodzik.start();
@@ -45,8 +97,7 @@ public class Main {
         samochodzik.wezSwiatla().wlaczMijania();
 
         //zuzycie na postoju
-        for ( int i =0; i<30;i++)
-        {
+        for (int i = 0; i < 30; i++) {
 
             Thread.sleep(1000);
             samochodzik.uaktualnij();
@@ -56,8 +107,7 @@ public class Main {
         samochodzik.setPedkoscAktualna(150);
         samochodzik.getPredkoscAktualna();
         samochodzik.zmienPredkosc(-10);
-        for ( int i =0; i<10;i++)
-        {
+        for (int i = 0; i < 10; i++) {
 
             Thread.sleep(1000);
             samochodzik.uaktualnij();
@@ -74,4 +124,8 @@ public class Main {
         System.out.println("Hello World!");
 
     }
+
+
+
+
 }
