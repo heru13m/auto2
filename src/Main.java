@@ -10,12 +10,15 @@ import java.time.temporal.Temporal;
 //import javax.swing.text.Document;
 
 import Data.Podroz;
+/*
 import View.MainFrame;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import org.bson.Document;
+
+ */
 
 public class Main {
 

@@ -89,6 +89,17 @@ public class Auto {
         this.przywrocUstawienia(ustawieniaSamochodu);
     }
 
+    /**
+     * Przywraca ustawienia z odczytanego przedniej obiektu UstawieniaSamochodu.
+     *
+     * @param backup obiekt klasy UstawieniaSamochodu z danymi które chcemy przywrócić
+     */
+    public void przywrocUstawienia(UstawieniaSamochodu backup) {
+        this.przebiegCalkowity = backup.getPrzebiegCalkowity();
+        this.przebieg1 = backup.getPrzebieg1();
+        this.przebieg2 = backup.getPrzebieg2();
+    }
+
     public SwiatlaSamochodowe wezSwiatla(){
         return swiatla;
     }
@@ -544,6 +555,7 @@ public class Auto {
 //    public Database getDb() {
 //        return db;
 //    }
+
 
 
 
