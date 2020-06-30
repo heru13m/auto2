@@ -1,15 +1,15 @@
 package Controller;
 
 /**
- * Klasa wyjątku niepoprawnej wartości numerycznej.
+ * Klasa wyjątku niepoprawnej wartości liczbowej
  */
 public class InvalidNumberException extends Exception {
 
     /**
-     * Konstruktor wyjątku z ustawioną wiadomością.
+     * Konstruktor wyjątku z wiadomością.
      */
     public InvalidNumberException() {
-        super("Dana liczba jest niepoprawna");
+        super("Niepoprawna liczba");
     }
 
     public  InvalidNumberException(String msg) {

@@ -57,15 +57,6 @@ public class Podroz implements Cloneable, Serializable {
         this.czasPoczatkowy = data;
     }
 
-    /** TODO
-     * Klonuje obiekt.
-
-     @Override
-     public Object clone() throws CloneNotSupportedException {
-     return super.clone();
-     }
-     */
-
     public String toString() {
         return "Poczatek podrozy " + czasPoczatkowy.format(formatCzasu) + "\n" +
                 "Koniec podrozy: " + czasKoncowy.format(formatCzasu) + "\n" +

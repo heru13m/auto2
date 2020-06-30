@@ -26,6 +26,13 @@ public class UstawieniaSamochodu {
         this.przebieg2 = auto.getPrzebieg2();
     }
 
+    public void setPrzebieg1(float przebieg1) {
+        this.przebieg1 = przebieg1;
+    }
+
+    public void setPrzebieg2(float przebieg2) {
+        this.przebieg2 = przebieg2;
+    }
 
     public UstawieniaSamochodu() {
         this.przebiegCalkowity = 0;

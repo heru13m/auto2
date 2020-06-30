@@ -13,7 +13,7 @@ import Data.DanePodstawowe;
 import Data.UstawieniaSamochodu;
 import Data.Podroz;
 import Data.Database;
-//import Data.XMLFileManager;
+
 
 /**
  * Klasa reprezentująca samochód oraz komputer pokładowy.
@@ -149,8 +149,8 @@ public class Auto {
 
 //            // Updating database
 //            try {
-              //db.addPodroz(aktualnaPodroz);
-              //db.odzyskajPodroze();
+              db.addPodroz(aktualnaPodroz);
+              db.odzyskajPodroze();
 //            } catch (SQLException e) {
 //                e.printStackTrace();
 //            }
@@ -250,6 +250,23 @@ public class Auto {
 
     public float getSrednieZuzyciePaliwa() {
         return srednieZuzyciePaliwa;
+    }
+
+    public double getCzasWMinutach() {
+        try {
+            Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
+            if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
+            double czasPracyWsekundach = czasPracy.getSeconds();
+            double czasPracyWMinutach = czasPracyWsekundach / 60;
+            return czasPracyWMinutach;
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+    }
+    public float getPredkoscMaksymalna() {
+        return predkoscMaksymalna;
     }
 
     public void setSrednieZuzyciePaliwa(float srednieZuzyciePaliwa) {
@@ -456,7 +473,13 @@ public class Auto {
     }
 
 
+    public void setPrzebieg1(float przebieg1) {
+        this.przebieg1 = przebieg1;
+    }
 
+    public void setPrzebieg2(float przebieg2) {
+        this.przebieg2 = przebieg2;
+    }
 
     /**
      * Stan silnika (włączony/wyłączony).

@@ -1,10 +1,6 @@
 package Data;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,7 +14,14 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import org.bson.Document;
 
-
+/**
+ * Klasa odpowiedzialna za połączenie z bazą danych
+ **
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
+ *
+ */
 
 public class Database {
 
@@ -31,43 +34,20 @@ public class Database {
     MongoCollection<Document> kolekcjaPodrozy = db.getCollection("Podroze");
 
     /**
-     * Konstruktor łączy się z bazą danych oraz tworzy obiekt zapytania które zostanie wysłane do bazy danych.
-     * @throws SQLException wyjatek nieudanego połączenia z bazą danych
+     * Konstruktor łączy się z bazą danych
      */
-//    public Database() throws SQLException  {
-//        connectionUrl = "jdbc:sqlserver://localhost:1433;databaseName=JDBC_database;";
-//        connection = DriverManager.getConnection(connectionUrl, "JDBC" , "Java1234");
-//        statement = connection.createStatement();
-//    }
     public Database()
     {
         MongoClient mongo = new MongoClient( "localhost" , 27017 );
         MongoDatabase db = mongo.getDatabase("Rejestr");
-
         MongoCollection<Document> kolekcjaPodrozy = db.getCollection("Podroze");
 
     }
 
     /**
-     * Dodaje wpis do bazy danych zawierający długość, średnie zużycie paliwa itp.
+     * Dodaje wpis do bazy danych opisujacy podróż
      * @param podroz obiekt klasy Podroz zawierający informacje o aktualnej podróży
-     * @throws SQLException wyjatek nieudanej operacji na bazie danych
      */
-//    public void addPodroz(Podroz podroz) throws SQLException {
-//        PreparedStatement pstmt = null;
-//
-//        pstmt = connection.prepareStatement("INSERT INTO Podroze VALUES (?, ?, ?, ?, ?);");
-//
-//        pstmt.setFloat(1, podroz.getDystans());
-//        pstmt.setFloat(2, podroz.getPrzebieg());
-//        pstmt.setString(4, podroz.getCzasPoczatkowyString());
-//        pstmt.setString(5, podroz.getCzasKoncowyString());
-//
-//        pstmt.executeUpdate();
-//
-//        if (pstmt != null) pstmt.close();
-//    }
-
     public void addPodroz(Podroz podroz){
         Document p = new Document("Dystans",podroz.getDystans())
                 .append("Przebieg",podroz.getPrzebieg())
@@ -79,63 +59,13 @@ public class Database {
     }
 
     /**
-     * Usuwa wpis od podanym identyfikatorze.
-     * @param id numer wpisu ktry chcemy usunać
-     * @throws SQLException wyjatek nieudanej operacji na bazie danych
-     */
-    public void usunPodroz(int id) throws SQLException {
-        PreparedStatement pstmt = null;
-        pstmt = connection.prepareStatement("DELETE FROM Podroze WHERE id=?;");
-        pstmt.setInt(1, id);
-        pstmt.executeUpdate();
-        if (pstmt != null) pstmt.close();
-    }
-
-    public int getPodrozId(String start, String stop) {
-        try {
-            ResultSet rs = statement.executeQuery("SELECT id FROM Podroze WHERE dataPoczatkowa='" + start + "' AND dataKoncowa='" + stop + "';");
-            int id = -1;
-            while (rs.next()) {
-                id = rs.getInt(1);
-            }
-            return id;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-    /**
-     * Usuwa z bazy danych wpisy których przebyty dystans lub średnie spalanie wynosi 0.
-     * Historia podróży przechowuje wszystkie uruchchomienia pojazdu, nawet gdy dystans równy jest zeru.
-     * Możliwość usunięcia takich wpisów pozostaje w rękach użytkownika.
-     * @throws SQLException wyjatek nieudanej operacji na bazie danych
-     */
-    public void usunEmptyPodroze() throws SQLException {
-        PreparedStatement pstmt = null;
-        pstmt = connection.prepareStatement("DELETE FROM Podroze WHERE dystans='0' OR srednieZuzyciePaliwa='0';");
-        pstmt.executeUpdate();
-        if (pstmt != null) pstmt.close();
-    }
-
-    /**
-     * Aktualizuje bazę danych o wpisy z listy.
-     * @param podroze lista objektow klasy Podroz
-     * @throws SQLException wyjatek nieudanej operacji na bazie danych
-     */
-    public void updatePodroze(ArrayList<Podroz> podroze) throws SQLException {
-        for(Podroz t : podroze) addPodroz(t);
-    }
-
-    /**
-     * Pobiera z bazy danych wszystkie wpisy jako listę.
-     * @return lista objektów klasy Podroz zawierająca wpisy z bazy danych
-     * @throws SQLException wyjatek nieudanej operacji na bazie danych
+     * Pobiera z bazy danych wszystkie wpisy
+     * @return lista objektów klasy Podroz
      */
 
     public ArrayList<Document> odzyskajPodroze(){
         ArrayList<Document> databasePodroze = new ArrayList<Document>();
         ArrayList<Podroz> databasePodroze2 = new ArrayList<Podroz>();
-        //float a;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         FindIterable<Document> cursor = kolekcjaPodrozy.find();
@@ -146,7 +76,6 @@ public class Database {
                 Document document = iterator.next();
               databasePodroze.add(document);
 
-              //  System.out.println(document);
             }
 
         for(int i=0; i < databasePodroze.size();i++)
@@ -159,33 +88,10 @@ public class Database {
             databasePodroze2.add(aktualnaPodroz);
         }
 
-
-       // System.out.println(databasePodroze.get(2).get("Poczatek",0));
         System.out.println("..................------...........----------........");
         System.out.println(databasePodroze2);
         System.out.println("..................");
         return databasePodroze;
     }
 
-
-    public ArrayList<Podroz> odzyskajPodroze2() throws SQLException {
-        ArrayList<Podroz> databasePodroze = new ArrayList<Podroz>();
-        ResultSet rs = statement.executeQuery("SELECT * FROM Podroze ORDER BY dataPoczatkowa DESC");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.0");
-
-        while (rs.next()) {
-            float dystans = rs.getFloat(2);
-            float przebiegCalkowity = rs.getFloat(3);
-            float srednieZuzyciePaliwa = rs.getFloat(4);
-            LocalDateTime dataPoczatkowa = LocalDateTime.parse(rs.getString(5), formatter);
-            LocalDateTime dataKoncowa = LocalDateTime.parse(rs.getString(6), formatter);
-
-            Podroz newPodroz = new Podroz(dystans, przebiegCalkowity, dataPoczatkowa);
-            newPodroz.setCzasKoncowy(dataKoncowa);
-            databasePodroze.add(newPodroz);
-        }
-
-        return databasePodroze;
-    }
 }
