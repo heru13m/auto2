@@ -16,6 +16,14 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Klasa mająca na celu przechowywanie przebiegow
+ **
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
+ *
+ */
 public class DanePodstawowe {
 
     public UstawieniaSamochodu wczytajPodstawoweDane()

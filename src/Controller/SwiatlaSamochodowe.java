@@ -1,5 +1,14 @@
 package Controller;
 
+/**
+ * Klasa reprezentująca swiatła samochodowe, zapewnia możliwość właczenia swiateł, wyłaczenia oraz sprawdzenia ich stanu.
+ *
+ *
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
+ *
+ */
 public class SwiatlaSamochodowe implements SwiatlaInerfejs {
     private boolean lewyKierunek;
     private boolean prawyKierunek;

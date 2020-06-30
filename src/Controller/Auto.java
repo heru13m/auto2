@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 import Data.DanePodstawowe;
@@ -14,15 +16,13 @@ import Data.Database;
 //import Data.XMLFileManager;
 
 /**
- * Klasa reprezentująca samochód i komputer pokładowy.
+ * Klasa reprezentująca samochód oraz komputer pokładowy.
  *
- * Wykonuje operacje na takich wartościach jak przebieg całkowity, dystans, średnie spalanie, prędkość, itd.
- * Pozwala operować silnikiem, zmianą biegów, włączaniem i wyłączaniem świateł.
- * Rejestruje podróże, które zaczynają się po wywołaniu metody {@link #start()}, a kończą {@link #stop()}
+ * Zapewnia funkcjonalnosć komputera pokładowego
  *
- * @version 1.2
- * @author Adam Kalisz
- * @author Kamil Rojszczak
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
  *
  */
 
@@ -55,8 +55,8 @@ public class Auto {
     private Database db;
 
     /**
-     * Konstruktor klasy Car. Ustawia domyślne wartości oraz tworzy obiekt klasy Database do którego będą później zapisywane
-     * dane z podróży. Jeżeli istnieje plik "bac/backup.dat" z ustawieniami wczytuje go i wykorzystuje zapisane w nim dane.
+     * Konstruktor klasy Auto. Ustawia domyślne wartości oraz tworzy obiekt klasy Database do którego będą później zapisywane
+     * dane z podróży. Wczytuje z pliku xml dane dotyczace przebiegu.
      */
     public Auto() {
         dystans = 0;
@@ -95,12 +95,14 @@ public class Auto {
 
 
     /**
-     * Ustawia datę i czas uruchomienia silnika, uruchamia silnik poprzez ustawienie flagi czyJestWlaczony.
+     * Ustawia datę i czas uruchomienia silnika, uruchamia silnik,
      * Tworzy obiekt aktualnaPodroz klasy Podroz który przechowuje dane o aktualnej podróży.
      */
     public void start() {
         predkoscSrednia = 0;
         predkoscMaksymalna = 0;
+        zuzytePaliwo =0;
+        srednieZuzyciePaliwa=0;
         dystans = 0;
         setCzasStartu(LocalDateTime.now());
         setWlaczony(true);
@@ -111,7 +113,7 @@ public class Auto {
 
     /**
      * Wyłącza silnik, zapisuje przebyty dystans, średnie zużycie paliwa oraz datę i czas zatrzymania silnika do obiektu aktualnaPodroz.
-     * Dodaje ostatnią podróż do bazy danych zapisuje dane do obiektu ustawień i zapisuje te ustawienia do pliku "backup.dat".
+     * Dodaje dystans do przebiegu przechowywanego w pliku xml
      */
     public void stop() {
         if(!czyJestWlaczony()) return;
@@ -191,6 +193,50 @@ public class Auto {
 
     }
 
+    /**
+     * Metoda aktualizuje parametry samochodu, w trybie konsolowym
+     */
+    public void uaktualnij2(Temporal czasOstatniegoSprawdzenia) {
+        try {
+            Duration czasOdOstatniegoSprawdzenie = Duration.between( czasOstatniegoSprawdzenia, LocalDateTime.now());
+            if (czasOdOstatniegoSprawdzenie.getSeconds() < 0) throw new InvalidDateException();
+            double czasOdOstatniegoSprawdzeniaSekundy = czasOdOstatniegoSprawdzenie.getSeconds();
+            if (czyJestWlaczony) {
+                System.out.println("aktualizuje auto");
+                if (predkoscAktualna > predkoscMaksymalna && czyJestWlaczony)
+                    predkoscMaksymalna = predkoscAktualna;
+                // 1 sec dystans difference
+                double dystansDiff = predkoscAktualna * czasOdOstatniegoSprawdzeniaSekundy / 3600.0;
+                dystans += dystansDiff;
+                przebieg1 += dystansDiff;
+                przebieg2 += dystansDiff;
+                przebiegCalkowity += dystansDiff;
+                if (dystansDiff > 0) {
+                    zuzytePaliwo += (liczSpalanie(predkoscAktualna) * dystansDiff / 100);
+                } else
+                    zuzytePaliwo += (liczSpalanie(predkoscAktualna) / 3600);
+
+
+                Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
+                if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
+                double czasPracyWsekundach = czasPracy.getSeconds();
+
+                if (dystans == 0)
+                    srednieZuzyciePaliwa = (float) (zuzytePaliwo * (3600f / czasPracyWsekundach));
+                else
+                    srednieZuzyciePaliwa = zuzytePaliwo * (100 / dystans);
+
+
+                if (czyJestWlaczony)
+                    predkoscSrednia = dystans * 1000 / (float) czasPracyWsekundach * 3.6f;
+            }
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+
+    }
+
     public float getSrednieZuzyciePaliwa() {
         return srednieZuzyciePaliwa;
     }
@@ -231,29 +277,10 @@ public class Auto {
         return predkoscSrednia;
     }
 
+
     /**
-     * Wykonywana cyklicznie, zwiększa lub zminiejsza obroty silnika
-     * w zależności od ustawionej prędkości, podobnie jak w tempomacie.
-     *
-     * @param predkoscDoOsiagniecia docelowa prędkość którą chcemy osiągnąć
+     * Metoda zmieniajaca predkosc pojazdu, używana podczas przyśpieszania lub hamowania.
      */
-    /*
-    public void przyspiesz(float predkoscDoOsiagniecia) {
-        this.predkoscAktualna = this.getPredkoscAktualna();
-        if(predkoscAktualna >= predkoscDoOsiagniecia) {
-            rpms--;
-            return;
-        }
-        if(rpms >= rpmMax) {
-            rpms = rpmMax - 150;
-        }
-        float diff = predkoscDoOsiagniecia > predkoscAktualna ? 0.9f : -1.9f;
-        rpms += diff;
-        if(rpms < 0) rpms = 0;
-    }
-
-     */
-
     // czyli gdy auto hamuje np -10 km/h na sekunde hamowania gdy jedzie luzem -1 gdy przyspiesza +5 km/h na sekunde
     public void zmienPredkosc(float roznicaPredkosciWSekundzie) {
         if (predkoscAktualna + roznicaPredkosciWSekundzie> 0f && predkoscAktualna + roznicaPredkosciWSekundzie< 210);
@@ -265,44 +292,17 @@ public class Auto {
 
     }
 
-    /**
-     * Przywraca ustawienia z odczytanego przedniej obiektu UstawieniaSamochodu.
-     *
-     * @param backup obiekt klasy UstawieniaSamochodu z danymi które chcemy przywrócić
-     */
-    public void przywrocUstawienia(UstawieniaSamochodu backup) {
-        this.przebiegCalkowity = backup.getPrzebiegCalkowity();
-        this.przebieg1 = backup.getPrzebieg1();
-        this.przebieg2 = backup.getPrzebieg2();
-    }
+
+
 
     /**
-     * Zapisuje ustawienia zapisane w obiekcie klasy UstawieniaSamochodu.
-     * @param sciezka ścieżka zapisu
-     */
-//    public void zapiszUstawienia(String sciezka) {
-//        XMLFileManager fm = new XMLFileManager();
-//        try {
-//            fm.saveToFile(ustawienia, sciezka);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    /**
-     * Zwraca ustawienie akutalnie zachowane w obiekcie klasy Car.
+     * Zwraca ustawienie akutalnie zachowane w obiekcie klasy Auto.
      * @return zachowane ustawienia
      */
     public UstawieniaSamochodu getUstawienia() {
         return ustawienia;
     }
 
-    /**
-     * Ustawia aktualne wartości przebiegu i paliwa do zmiennej UstawieniaSamochodu.
-     */
-    public void przelaczNaUstawienia() {
-        ustawienia = new UstawieniaSamochodu(this);
-    }
 
     /**
      * Zeruje wszystkie wartości zachowanych ustawień samochodu.
@@ -313,8 +313,8 @@ public class Auto {
     }
 
     /**
-     * Oblicza czas pomiędzy uruchomieniem i zatrzymaniem silnika (aktualnym czasem jeśli silnik jest uruchomiony).
-     * Zapisuje czas trwania do zmiennej czasCalkowity w formacie godziny:minuty:sekundy.
+     * Oblicza czas pomiędzy uruchomieniem i zatrzymaniem silnika.
+     * Zapisuje czas trwania do zmiennej czasCalkowity
      * @throws InvalidDateException wyjątek niepoprawnej daty
      */
     public void getAktualnyCzasWlaczeniaSamochodu() throws InvalidDateException {
@@ -331,23 +331,19 @@ public class Auto {
 
     /**
      * Zwraca przebieg całkowity.
-     * @return zwraca ilość przebytych kilometrów jako float
+     * @return zwraca ilość przebytych kilometrów
      */
     public float getPrzebiegTotal() {
         return przebiegCalkowity;
     }
 
-    /**
-     * Zwraca wartość czasu jaki został uprzednio obliczony poprzez {@link #getAktualnyCzasWlaczeniaSamochodu()}.
-     * @return zwraca wartość czasu jaki upłynął jako string w formacie: godziny:minuty:sekundy.
-     */
+
     public String getCzasCalkowity() {
         return czasCalkowity.toString();
     }
 
     /**
      * Dodaje do przebiegu podaną wartość.
-     * @param ekstraPrzebieg zmienna typu float która zostanie dodana do przebiegu całkowitego
      */
     public void uaktualnijPrzebiegCalkowity(float ekstraPrzebieg) {
         this.przebiegCalkowity += ekstraPrzebieg;
@@ -355,7 +351,7 @@ public class Auto {
 
     /**
      * Zwraca wartość pierwszego licznika dziennego.
-     * @return zwraca ilość przebytych kilometrów jako float
+     * @return zwraca ilość przebytych kilometrów
      */
     public float getPrzebieg1() {
         return przebieg1;
@@ -363,7 +359,6 @@ public class Auto {
 
     /**
      * Dodaje do pierwszego licznika dziennego podaną wartość.
-     * @param ekstraPrzebieg zmienna typu float która zostanie dodana
      */
     public void uaktualnijPrzebieg1(float ekstraPrzebieg) {
         this.przebieg1 += ekstraPrzebieg;
@@ -378,7 +373,7 @@ public class Auto {
 
     /**
      * Zwraca wartość drugiego licznika dziennego.
-     * @return zwraca ilość przebytych kilometrów jako float
+     * @return zwraca ilość przebytych kilometrów
      */
     public float getPrzebieg2() {
         return przebieg2;
@@ -386,7 +381,6 @@ public class Auto {
 
     /**
      * Dodaje do drugiego licznika dziennego podaną wartość.
-     * @param ekstraPrzebieg zmienna typu float która zostanie dodana
      */
     public void uaktualnijPrzebieg2(float ekstraPrzebieg) {
         this.przebieg2 += ekstraPrzebieg;
@@ -400,8 +394,8 @@ public class Auto {
     }
 
     /**
-     * Zwraca przebyty dystans od uruchomienia silnika.
-     * @return zwraca długość przebytego dystansu jako float
+     * Zwraca przebyty dystans w danej podróży
+     * @return zwraca długość przebytego dystansu
      */
     public float getDystans() {
         return dystans;
@@ -409,7 +403,6 @@ public class Auto {
 
     /**
      * Dodaje do odległości podróży podaną zmienną.
-     * @param a zmienna typu float która zostanie dodana do dystansu aktualnej podróży
      */
     public void dodajDystansDoPodrozy(float a) {
         this.dystans += a;
@@ -424,7 +417,7 @@ public class Auto {
 
     /**
      * Zwraca maksymalną prędkość.
-     * @return zwraca maksymalną prędkość jako float
+     * @return zwraca maksymalną prędkość
      */
     public float getPedkoscMaksymalna() {
         return predkoscMaksymalna;
@@ -432,7 +425,7 @@ public class Auto {
 
     /**
      * Ustawia maksynalną prędkość.
-     * @param predkoscMaksymalna maksymalną prędkość jako float
+     * @param predkoscMaksymalna maksymalną prędkość
      */
     public void setPedkoscMaksymalna(float predkoscMaksymalna) {
         this.predkoscMaksymalna = predkoscMaksymalna;
@@ -456,14 +449,14 @@ public class Auto {
 
     /**
      * Stan silnika (włączony/wyłączony).
-     * @return Zwraca aktualny stan silnika jako true/false.
+     * @return Zwraca aktualny stan silnika jako zmienna boolowska
      */
     public boolean czyJestWlaczony() {
         return czyJestWlaczony;
     }
 
     /**
-     * Ustawia stan silnika.
+     * Ustawia stan silnika ( wlaczony/ wylaczony )
      * @param czyJestWlaczony stan silnika jako true/false
      */
     public void setWlaczony(boolean czyJestWlaczony) {
@@ -487,7 +480,7 @@ public class Auto {
     }
 
     /**
-     * Zwraca czas zatrzymania silnika.
+     * Zwraca czas wylaczenia silnika.
      * @return czas zatrzymania jako String
      */
     public String getCzasZatrzymania() {
@@ -495,7 +488,7 @@ public class Auto {
     }
 
     /**
-     * Ustawia czas zatrzymania silnika.
+     * Ustawia czas wylaczenia silnika.
      * @param czasZatrzymania czas zatrzymania
      */
     public void setCzasZatrzymania(LocalDateTime czasZatrzymania) {
@@ -511,7 +504,7 @@ public class Auto {
     }
 
     /**
-     * Zwraca prędkość ustawioną na tempomacie.
+     * Zwraca prędkość tempomatu
      * @return prędkość ustawiona na tempomacie jako float
      */
     public float getPredkoscTempomatu() {
@@ -520,7 +513,7 @@ public class Auto {
 
     /**
      * Ustawia prędkość na tempomacie.
-     * @param predkoscTempomatu prędkość na tempomacie jako float
+     * @param predkoscTempomatu prędkość na tempomacie
      */
     public void setPredkoscTempomatu(float predkoscTempomatu) {
         this.predkoscTempomatu = predkoscTempomatu;
@@ -552,26 +545,34 @@ public class Auto {
 //        return db;
 //    }
 
-    /**
-     * Zwraca pojemność baku.
-     * @return pojemność baku w litrach
-     */
-    public float getBenzynaPelna() {
-        return benzynaPelna;
-    }
+
 
     @Override
     public String toString() {
-        return "Auto{" +
-                "przebiegCalkowity=" + przebiegCalkowity +
-                ", przebieg1=" + przebieg1 +
-                ", przebieg2=" + przebieg2 +
-                ", dystans=" + dystans +
-                ", srednieZuzyciePaliwa=" + srednieZuzyciePaliwa +
-                ", predkoscMaksymalna=" + predkoscMaksymalna +
-                ", predkoscSrednia=" + predkoscSrednia +
-                ", tempomat=" + tempomat +
-                ", czyJestWlaczony=" + czyJestWlaczony +
-                '}';
+        try {
+            Duration czasPracy = Duration.between(czasStartu, LocalDateTime.now());
+            if (czasPracy.getSeconds() < 0) throw new InvalidDateException();
+            double czasPracyWsekundach = czasPracy.getSeconds();
+            double czasPracyWMinutach = czasPracyWsekundach / 60;
+
+            return "Auto{" +
+                    "przebiegCalkowity=" + przebiegCalkowity +
+                    ", przebieg1=" + przebieg1 +
+                    ", przebieg2=" + przebieg2 +
+                    ", dystans=" + dystans +
+                    ", srednieZuzyciePaliwa=" + srednieZuzyciePaliwa +
+                    ", zuzytePaliwo=" + zuzytePaliwo +
+                    ", predkoscMaksymalna=" + predkoscMaksymalna +
+                    ", predkoscAktualna=" + predkoscAktualna +
+                    ", predkoscSrednia=" + predkoscSrednia +
+                    ", tempomat=" + tempomat +
+                    ", czasCalkowity=" + czasPracyWMinutach + " min" +
+                    '}';
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return "Awaria";
+        }
     }
+
 }

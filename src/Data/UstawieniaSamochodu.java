@@ -5,6 +5,14 @@ package Data;
 import Controller.Auto;
 
 
+/**
+ * Klasa reprezentująca ustawienia samochodu, wczytywana na starcie samochody
+ **
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
+ *
+ */
 public class UstawieniaSamochodu {
 
 

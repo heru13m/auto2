@@ -1,15 +1,12 @@
-import Controller.AktualizujDane;
 import Controller.Auto;
 import View.MainFrame;
-import java.awt.Dimension;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 
-import javax.swing.JFrame;
 //import javax.swing.text.Document;
 
 import Data.Podroz;
@@ -33,43 +30,87 @@ public class Main {
 
             //tu wywolanie okienka
         } else if (args[0].compareTo("g") == 0 || args[0].compareTo("graficzny") == 0) {
+            try {
+                Temporal czasOstatniegoSprawdzenia =LocalDateTime.now();
 
-            Auto samochodzik = new Auto();
+                Auto samochodzik = new Auto();
 
+                System.out.println("Witaj, wybierz co chcesz zrobić:");
+                System.out.println("S: Uruchom silnik");
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                System.out.print("Twój wybór: ");
+                String s = null;
+                s = br.readLine();
 
-            Runnable r = new Runnable() {
-                public void run() {
-                    boolean flag = true;
-                    int i = 0;
-                    while(flag){
-                                    samochodzik.uaktualnij();
-                                }
+                if (s.equals("S")) {
+                    samochodzik.start();
+                    czasOstatniegoSprawdzenia= LocalDateTime.now();
+                    while (s.equals("E") == false) {
+                        if (samochodzik.czyJestWlaczony() == false)
+                            System.out.println("S: Uruchom silnik");
+                        System.out.println("D: Sprawdz dane samochodu");
+                        System.out.println("W: Przyspiesz");
+                        System.out.println("S: Zwolnij");
+                        System.out.println("P: Zmien status swatel postojowych");
+                        System.out.println("P: Zmien status swatel mijania");
+                        System.out.println("O: Zakoncz podroz");
+                        System.out.println("E: Wyjdz");
+
+                        System.out.print("Twój wybór: ");
+                        s = br.readLine();
+
+                        if (s.equals("D")) {
+                            samochodzik.uaktualnij2(czasOstatniegoSprawdzenia);
+                            czasOstatniegoSprawdzenia= LocalDateTime.now();
+                            System.out.println(samochodzik.toString());
+                        }
+                        if (s.equals("W")) {
+                            System.out.println("Przyspieszam z predkosci "+ Float.toString(samochodzik.getPredkoscAktualna()));
+                            samochodzik.zmienPredkosc(5);
+                            System.out.println("aktualna predkosc "+ Float.toString(samochodzik.getPredkoscAktualna()));
+                            samochodzik.uaktualnij2(czasOstatniegoSprawdzenia);
+                            czasOstatniegoSprawdzenia= LocalDateTime.now();
+                        }
+                        if (s.equals("S")) {
+                            System.out.println("Zwalniam z predkosci "+ Float.toString(samochodzik.getPredkoscAktualna()));
+                            samochodzik.zmienPredkosc(-10);
+                            System.out.println("aktualna predkosc "+ Float.toString(samochodzik.getPredkoscAktualna()));
+                            samochodzik.uaktualnij2(czasOstatniegoSprawdzenia);
+                            czasOstatniegoSprawdzenia= LocalDateTime.now();
+
+                        }
+
+                        if (s.equals("P")) {
+                            if (samochodzik.wezSwiatla().isPozycyjne()==false) {
+                                samochodzik.wezSwiatla().wlaczPozycyjne();
+                                System.out.println("Właczono swiatla pozycyjne");
+                            }
+                            else{
+                                samochodzik.wezSwiatla().wylaczPozycje();
+                            System.out.println("Wylaczono swiatla pozycyjne");}
+
+                        }
+
+                        if (s.equals("M")) {
+                            if (samochodzik.wezSwiatla().isMijania()==false) {
+                                samochodzik.wezSwiatla().wlaczMijania();
+                                System.out.println("Właczono swiatla mijania");
+                            }
+                            else{
+                                samochodzik.wezSwiatla().wylaczMijania();
+                                System.out.println("Wylaczono swiatla mijania");}
+
+                        }
+
+                        if (s.equals("O"))
+                            samochodzik.stop();
+                        Thread.sleep(1000);
                     }
 
-            };
 
-            Thread t = new Thread(r);
-            // Lets run Thread in background..
-            // Sometimes you need to run thread in background for your Timer application..
-            t.start();
-
-
-            System.out.println("Witaj, wybierz co chcesz zrobić:");
-            System.out.println("1. Uruchom silnik");
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Twój wybór:");
-            String s= null;
-            try {
-                 s = br.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (s.equals("1")) {
-                samochodzik.start();
-                System.out.println("1: Sprawdz dane samochodu");
-                System.out.println("W: Przyspiesz");
-                System.out.println("S: Zwolnij");
-
+                }
+            }catch (Exception e){
+                System.out.println(e);
             }
 
         } else {
@@ -89,39 +130,6 @@ public class Main {
 //         db.createCollection("Podroze");
 //         System.out.println("Collection created successfully");
 
-
-        Auto samochodzik = new Auto();
-        new MainFrame(samochodzik);
-        samochodzik.start();
-        samochodzik.wezSwiatla().wlaczPozycyjne();
-        samochodzik.wezSwiatla().wlaczMijania();
-
-        //zuzycie na postoju
-        for (int i = 0; i < 30; i++) {
-
-            Thread.sleep(1000);
-            samochodzik.uaktualnij();
-
-        }
-        samochodzik.zmienPredkosc(-2);
-        samochodzik.setPedkoscAktualna(150);
-        samochodzik.getPredkoscAktualna();
-        samochodzik.zmienPredkosc(-10);
-        for (int i = 0; i < 10; i++) {
-
-            Thread.sleep(1000);
-            samochodzik.uaktualnij();
-
-        }
-        samochodzik.stop();
-        System.out.println(samochodzik.getPrzebiegCalkowity());
-        System.out.println(samochodzik.getPrzebieg1());
-        System.out.println(samochodzik.getPrzebieg2());
-        System.out.println(samochodzik.getPredkoscSrednia());
-        System.out.println(samochodzik);
-        System.out.println(samochodzik.getSwiatla().toString());
-
-        System.out.println("Hello World!");
 
     }
 

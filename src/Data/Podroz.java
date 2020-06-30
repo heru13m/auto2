@@ -7,7 +7,14 @@ import java.time.format.DateTimeFormatter;
 import Controller.InvalidDateException;
 import Controller.InvalidNumberException;
 
-
+/**
+ * Klasa reprezentująca pojedyńczą podróż
+ **
+ * @version 1.0
+ * @author Maciej Ksiezak
+ * @author Mateusz Mus
+ *
+ */
 public class Podroz implements Cloneable, Serializable {
 
     private float dystans;
